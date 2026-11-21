@@ -1,0 +1,177 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ride-hailing pilot UX validation</title><style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style></head><body><main class="container"><header class="report-header"><div class="title"><h1>Ride-hailing pilot UX validation</h1><p>5 high, 3 medium findings</p></div></header><section class="synthesis"><strong>Remediation update</strong><p>All eight findings were addressed in the design specifications and preview after this review. Markup and simulated interaction checks passed. Native screen-reader, dialer and payment-provider acceptance checks remain pending. The findings below document the original review.</p></section><div class="synthesis"><p>The handoff keeps trip and payment state separate and requires consent to a refreshed quote. The remaining gaps occur at decisions a person must make under pressure: calling for help, accepting a changed fare, and deciding whether to wait, retry or settle a balance.</p></div><div class="dimension-summary"><div class="dim-card"><div class="dim-name">Accessibility</div><div class="dim-verdict">Needs revision</div></div><div class="dim-card"><div class="dim-name">Trip and payment recovery</div><div class="dim-verdict">Needs revision</div></div></div><section class="reviewer-section"><details open><summary><h2>Accessibility</h2></summary><div class="dim-body"><p>Address entry and scalable text are specified. Four controls or transitions need explicit assistive-technology behavior.</p><a href="review-accessibility.md">Individual review</a><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Identify emergency calling by its spoken action</h3></header><div class="finding-location">EXPERIENCE.md · Interaction Primitives / Story 5.2</div><p>Both static trip screens label Emergency as text. The handoff leaves the actionable role and spoken label implicit.</p><p><strong>Change and test. </strong>Specify a native “Call emergency services” button. On each mobile platform and in both roles, locate it with a screen reader at the largest text size and open the configured dialer. Stop before placing a call.</p></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Announce a changed fare before confirmation</h3></header><div class="finding-location">EXPERIENCE.md · Quote sheet / Story 2.3</div><p>Focus can stay on Confirm during quote refresh while the rider misses the new amount.</p><p><strong>Change and test. </strong>Announce the old and new localized totals once and include the current fare in the button name. Verify focus remains and only explicit acceptance creates a request.</p></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Read back the refined pickup address</h3></header><div class="finding-location">EXPERIENCE.md · Accessibility Floor / Story 2.2</div><p>The handoff supports manual entry and pin refinement but leaves spoken feedback for the resolved address implicit.</p><p><strong>Change and test. </strong>Announce the settled address once. Verify both text entry and pin refinement produce the same pickup in the quote.</p></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Define keyboard focus inside refund confirmation</h3></header><div class="finding-location">DESIGN.md · Safe-action dialog / Story 4.5</div><p>The design covers return focus but leaves initial focus and traversal during the financial decision ambiguous.</p><p><strong>Change and test. </strong>Specify a named modal, initially focus Cancel, and contain Tab and Shift+Tab. Verify cancel restores the opener and submits no refund.</p></article></div></div></details></section><section class="reviewer-section"><details open><summary><h2>Trip and payment recovery</h2></summary><div class="dim-body"><p>Rematching, authoritative trip state and pending payments have defined behavior. Four financial decisions need clearer on-screen evidence.</p><a href="review-trip-payment-recovery.md">Individual review</a><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Distinguish authorization decline from a lost response</h3></header><div class="finding-location">EXPERIENCE.md · Book and find the right car / Story 2.4</div><p>A confirmed decline has no specified rider-facing result. The rider may keep waiting for a driver.</p><p><strong>Change and test. </strong>Show that the search did not start and offer payment review. Simulate a decline and a timeout separately. Expect zero offers on decline, and recovery of the existing request with at most one hold after a lost response.</p></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Show the fare and hold outcome at dispatch timeout</h3></header><div class="finding-location">EXPERIENCE.md · Searching ends / Stories 2.6 and 4.2</div><p>The timeout screen offers retry while the release terminology lives elsewhere. A rider could mistake an outstanding hold for a charge.</p><p><strong>Change and test. </strong>Pair “No fare charged” with the actual hold status before Try again. Test no hold, release requested and release confirmed. Replaying settlement must produce no fare capture.</p></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Expose the amount and next action after failed capture</h3></header><div class="finding-location">EXPERIENCE.md · Completed, including early end / Story 4.2</div><p>The underlying strategy calls for recovery, but the receipt contract omits a concrete action and outstanding amount.</p><p><strong>Change and test. </strong>Show Completed, Payment failed, amount and currency, and Resolve payment. Pending should offer status checking. Replay recovery success and verify one settlement and a zero balance.</p></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Identify the refund destination</h3></header><div class="finding-location">mockups/key-screens.html · Operations / Story 4.5</div><p>“Original payment method” gives the agent too little information to check the transfer.</p><p><strong>Change and test. </strong>Preview the masked method attached to the captured transaction. Test a rider who changed their payment method after the trip.</p></article></div></div></details></section><div class="mechanical"><h3>Verification</h3>Design evidence only. Source links and token references resolved. The six specified text/background pairs ranged from 7.93:1 to 15.72:1. A static preview cannot verify assistive technology, service responses or ledger behavior. Run the acceptance checks in an interactive prototype or test build with simulated transactions.</div><footer class="report-footer"><a href="DESIGN.md">Visual specification</a> · <a href="EXPERIENCE.md">Interaction specification</a> · <a href="mockups/key-screens.html">Static reference</a> · 2026-11-21T13:56:31+05:30</footer></main></body></html>

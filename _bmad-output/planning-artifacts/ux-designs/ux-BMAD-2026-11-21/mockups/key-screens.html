@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ride-hailing pilot · Key screens</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf2f1;color:#17252b;font:1rem/1.5 system-ui,sans-serif}main{max-width:85rem;margin:auto;padding:clamp(1rem,3vw,3rem)}h1{font-size:clamp(1.6rem,4vw,2.4rem);margin:0}header p{margin:.35rem 0 2rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1.25rem;align-items:start}figure{margin:0}figcaption{font-weight:650;margin-bottom:.65rem}article{padding:1.25rem;background:white;border:1px solid #89999b;border-radius:16px}h2{font-size:1.35rem;margin:.15rem 0}small{font-size:.9rem}dl{margin:1rem 0}dt{font-size:.875rem;color:#42545a}dd{margin:0 0 .75rem;font-weight:650}.id{font-size:2rem;font-variant-numeric:tabular-nums;letter-spacing:.05em}.panel{padding:.9rem;border:1px solid #89999b;border-radius:8px;margin:1rem 0}.night{background:#142428;color:#f2f8f6}.night dt{color:#c0d4cf}.action,.key{display:grid;place-items:center;min-height:3rem;border:1px solid currentColor;border-radius:8px;text-align:center;padding:.45rem;font-weight:600}.primary{background:#005b55;color:white;border:0}.night .primary{background:#96e6d4;color:#142428}.row{display:flex;gap:.4rem;flex-wrap:wrap}.row>*{flex:1}.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.7rem}.key{min-height:3.5rem}.amount{font-size:1.65rem}hr{border:0;border-top:1px solid #89999b}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid currentColor;outline-offset:3px}button{padding:.55rem .8rem;min-height:3rem;border-radius:8px;background:#fff;color:#17252b;border:1px solid #42545a}.night button{min-height:3.5rem}button:disabled{cursor:default}.controls{display:grid;gap:.65rem}dialog{color:#17252b;max-width:min(30rem,90vw);border:1px solid #42545a;border-radius:12px;padding:1.4rem}dialog::backdrop{background:#142428aa}input,select{max-width:100%;padding:.55rem}.panel:empty{display:none}
+</style>
+<main><header><h1>Ride-hailing pilot</h1><p>Design preview · Fictional trips, simulated calls and payments</p></header>
+<div class="grid">
+<figure><figcaption>Rider · Identify the car</figcaption><article><small>Trip · Assigned</small><h2>Pickup in about 4 min</h2><p>North entrance, station square</p><dl><dt>Driver</dt><dd>Ravi · Driver photo alongside name</dd><dt>Vehicle plate</dt><dd class="id">AB 1234</dd></dl><div class="panel"><small>Pickup PIN</small><div class="id">6 2 4 9</div>Match the plate and photo before sharing this code with your driver.</div><div class="action primary">Contact driver</div><hr><div class="row"><span>Share trip</span><span>Report</span><button type="button" class="emergency">Call emergency services</button></div><p role="status" class="call-result"></p></article></figure>
+<figure><figcaption>Driver · Verify at pickup</figcaption><article class="night"><small>Trip · Driver arrived</small><h2>Enter the rider’s PIN</h2><p>North entrance, station square</p><div class="panel"><small>Pickup PIN</small><div class="id">• • • •</div></div><div class="pad" aria-label="Illustrative keypad"><span class="key">1</span><span class="key">2</span><span class="key">3</span><span class="key">4</span><span class="key">5</span><span class="key">6</span><span class="key">7</span><span class="key">8</span><span class="key">9</span><span class="key">Delete</span><span class="key">0</span><span class="key">Clear</span></div><div class="action primary">Verify and start trip</div><p>Contact support</p><hr><div class="row"><span>Report</span><button type="button" class="emergency">Call emergency services</button></div><p role="status" class="call-result"></p></article></figure>
+<figure><figcaption>Operations · Review a refund</figcaption>
+<article><small>Trip 1042 · Billing case</small><h2>Fare adjustment</h2><p>Trip · Completed<br>Payment · Paid</p>
+<dl><dt>Eligible refund</dt><dd>₹45.00</dd><dt>Reason</dt><dd>Incorrect adjustment</dd><dt>Captured on</dt><dd>Card ending 4417</dd></dl>
+<button id="refund-open">Review refund</button><p role="status" id="refund-status"></p></article></figure>
+
+<figure><figcaption>Rider · Review pickup and price</figcaption>
+<article class="controls"><h2>Review quote</h2><label for="pickup">Pickup address</label><input id="pickup" value="North entrance, Station Square">
+<button id="save-address">Use this address</button><button id="pin">Use south entrance pin</button>
+<p role="status" id="address-result">Pickup: North entrance, Station Square</p>
+<p>Destination: Market Street<br>Estimated pickup: 4 min</p>
+<button id="refresh">Preview expiry while Confirm has focus</button>
+<p role="status" id="fare-result">Quoted total: ₹245.00</p>
+<button class="primary" id="accept">Confirm ₹245.00</button><p role="status" id="booking-result"></p></article></figure>
+
+<figure><figcaption>Rider · Booking and payment outcomes</figcaption>
+<article class="controls"><h2>Recovery states</h2><label for="outcome">Preview a scenario</label>
+<select id="outcome"><option value="decline">Authorization declined</option><option value="unknown">Booking response lost</option><option value="nohold">Dispatch timeout · No hold</option><option value="release">Dispatch timeout · Release requested</option><option value="released">Dispatch timeout · Hold released</option><option value="failed">Completed · Capture failed</option><option value="pending">Completed · Capture pending</option></select>
+<div class="panel" id="money-state" role="status"></div><button id="money-action"></button><p role="status" id="money-result"></p></article></figure>
+</div>
+<dialog id="refund-dialog" aria-labelledby="refund-title" aria-describedby="refund-impact">
+<h2 id="refund-title">Confirm refund</h2><p id="refund-impact">Trip 1042. Return ₹45.00 to the card ending 4417 used for this trip. Reason: incorrect adjustment.</p>
+<div class="row"><button id="refund-cancel" autofocus>Cancel</button><button id="refund-confirm" class="primary">Confirm refund</button></div></dialog>
+</main>
+<script>
+const byId = id => document.getElementById(id);
+document.querySelectorAll('.emergency').forEach(button => {
+  button.onclick = () => {
+    button.closest('article').querySelector('.call-result').textContent = 'Preview: opens the device dialer with the configured emergency destination.';
+  };
+});
+
+function applyPickup(address) {
+  if (!address) {
+    byId('pickup').focus();
+    byId('address-result').textContent = 'Enter a pickup address.';
+    return;
+  }
+  byId('pickup').value = address;
+  const resolved = 'Pickup: ' + address;
+  if (byId('address-result').textContent !== resolved) byId('address-result').textContent = resolved;
+}
+byId('save-address').onclick = () => applyPickup(byId('pickup').value.trim());
+byId('pin').onclick = () => applyPickup('South entrance, Station Square');
+let fare = '₹245.00';
+byId('refresh').onclick = () => {
+  byId('accept').focus();
+  if (fare === '₹262.00') return;
+  fare = '₹262.00';
+  byId('fare-result').textContent = 'Quote expired. Previous total ₹245.00. New total ' + fare + '.';
+  byId('accept').textContent = 'Confirm ' + fare;
+};
+byId('accept').onclick = () => {
+  byId('booking-result').textContent = 'Searching · Confirmed at ' + fare;
+  byId('accept').disabled = true;
+  byId('refresh').disabled = true;
+};
+
+const scenarios = {
+  decline: ['Payment authorization failed. Driver search did not start.', 'Review payment method', 'Payment method: card ending 4417.'],
+  unknown: ['Checking booking status for the existing request.', 'Check booking status', 'Existing request recovered · Searching.'],
+  nohold: ['No driver found. No fare charged.', 'Try again', 'Review a fresh quote before requesting a ride.'],
+  release: ['No driver found. No fare charged. Hold release requested.', 'Try again', 'Review a fresh quote before requesting a ride.'],
+  released: ['No driver found. No fare charged. Hold released.', 'Try again', 'Review a fresh quote before requesting a ride.'],
+  failed: ['Trip · Completed. Payment · Failed. Outstanding balance ₹245.00.', 'Resolve payment', 'Pay the outstanding ₹245.00 using the supported card ending 4417.'],
+  pending: ['Trip · Completed. Payment · Pending.', 'Check payment status', 'Payment is pending provider confirmation.']
+};
+function showScenario() {
+  const [state, action, result] = scenarios[byId('outcome').value];
+  byId('money-state').textContent = state;
+  byId('money-action').textContent = action;
+  byId('money-result').textContent = '';
+  byId('money-action').onclick = () => { byId('money-result').textContent = result; };
+}
+byId('outcome').onchange = showScenario;
+showScenario();
+
+const dialog = byId('refund-dialog');
+let submitted = false;
+byId('refund-open').onclick = () => {
+  if (submitted) return;
+  dialog.showModal();
+  byId('refund-cancel').focus();
+};
+byId('refund-cancel').onclick = () => dialog.close();
+byId('refund-confirm').onclick = () => {
+  submitted = true;
+  byId('refund-status').textContent = 'Refund requested · ₹45.00 to card ending 4417.';
+  byId('refund-open').setAttribute('aria-disabled', 'true');
+  dialog.close();
+};
+dialog.onclose = () => byId('refund-open').focus();
+dialog.onkeydown = event => {
+  if (event.key !== 'Tab') return;
+  const first = byId('refund-cancel');
+  const last = byId('refund-confirm');
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+};
+</script></html>

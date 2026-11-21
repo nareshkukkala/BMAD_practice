@@ -1,0 +1,5 @@
+.DS_Store
+**/.DS_Store
+_bmad/custom/*.user.toml
+_bmad/config.user.toml
+*.log

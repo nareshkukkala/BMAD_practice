@@ -1,5 +1,7 @@
 import React,{useEffect,useState} from 'react';import{ActivityIndicator,Alert,Linking,ScrollView,StatusBar,StyleSheet,Text,TextInput,TouchableOpacity,View}from'react-native';
 const API=process.env.EXPO_PUBLIC_API_URL||'http://localhost:3000';type Any=Record<string,any>;
+const DEMO_DESTINATION={lat:19.0896,lng:72.8656};
+const distanceKm=(lat:number,lng:number)=>{const R=6371,dLat=(DEMO_DESTINATION.lat-lat)*Math.PI/180,dLng=(DEMO_DESTINATION.lng-lng)*Math.PI/180,lat1=lat*Math.PI/180,lat2=DEMO_DESTINATION.lat*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))};
 export default function App(){const[token,setToken]=useState(''),[pickup,setPickup]=useState('North entrance, Station Square'),[destination,setDestination]=useState('Market Street'),[note,setNote]=useState(''),[quote,setQuote]=useState<Any|null>(null),[trip,setTrip]=useState<Any|null>(null),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[pin,setPin]=useState(''),[history,setHistory]=useState<Any[]>([]);
 const call=async(path:string,method='GET',body?:Any)=>{const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok){const error:any=Error(d.message||'Could not complete that action.');error.code=d.code;error.status=r.status;throw error}return d};const run=async(f:()=>Promise<any>)=>{setBusy(true);setMsg('');try{await f()}catch(e:any){setMsg(e.message)}finally{setBusy(false)}};
 const login=()=>run(async()=>{const x=await call('/api/auth/demo','POST',{handle:'mira',code:'424242'});setToken(x.token);setMsg('Phone verified · You are signed in.')});const loadHistory=()=>run(async()=>{setHistory(await call('/api/trip'))});
@@ -27,7 +29,7 @@ return <ScrollView style={s.page} contentContainerStyle={s.content} accessibilit
   <Text style={s.copy}>{trip.pickup} → {trip.destination}</Text>
   {trip.paymentStatus==='Authorising'?<Text accessibilityLiveRegion="polite">Driver search starts after payment authorization succeeds.</Text>:null}
   {trip.authorizationFailure?<Text style={s.message}>{trip.authorizationFailure} No driver was offered this trip.</Text>:null}
-  {trip.location?<Text accessibilityLiveRegion="polite">{trip.location.stale?`Location is stale · last updated ${trip.location.ageSeconds}s ago`:`Location updated ${trip.location.ageSeconds}s ago`}</Text>:null}
+  {trip.location?<Text accessibilityLiveRegion="polite">{trip.location.stale?`Location is stale · last known distance ${distanceKm(trip.location.lat,trip.location.lng).toFixed(1)} km away · last updated ${trip.location.ageSeconds}s ago`:`${distanceKm(trip.location.lat,trip.location.lng).toFixed(1)} km away · updated ${trip.location.ageSeconds}s ago`}</Text>:null}
   <Text style={s.money}>Payment · {trip.paymentStatus||'Authorised'}</Text>
   {isIdentifyCar?
   <>

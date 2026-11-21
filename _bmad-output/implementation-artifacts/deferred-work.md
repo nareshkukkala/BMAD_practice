@@ -35,3 +35,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-console-ui-match-mockups.md`
   summary: No automated test coverage exists for the console's refund-confirmation wiring (Confirm/Cancel bound to the right buttons, no premature or duplicate `/api/operations/refund` call) or the documents dialog, and `apps/console` has no test script or test framework at all today.
   evidence: Verification-gap review confirmed a wiring mistake here (e.g. Confirm accidentally wired to Cancel's handler) would ship with every existing check green. Standing up vitest+jsdom for this workspace from scratch is not a trivial patch — fold into the already-deferred "End-to-end acceptance-test coverage mapped to each of the 6 epics' stories" item above when that work starts.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-live-location-tracking.md`
+  summary: No automated test coverage exists for the driver's automatic location-reporting effect (gating on trip status, epoch/sequence correctness, interpolation math) or the rider's haversine distance calculation — `apps/rider` and `apps/driver` have no test infrastructure at all today.
+  evidence: Verification-gap review found a regression here (e.g. inverted gating, swapped lat/lng in the haversine formula) would ship undetected by every existing check. Fold into the already-deferred "End-to-end acceptance-test coverage" item when that work starts; when it does, extract the interpolation/distance math into plain importable functions so they can be unit-tested without rendering.

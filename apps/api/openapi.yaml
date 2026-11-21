@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: Ride Pilot API
+  version: 1.0.0
+  description: Backend-owned HTTP contract for rider, driver, console and worker surfaces.
+servers:
+  - url: http://localhost:3000
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/demo:
+    post:
+      security: []
+      summary: Start a deterministic local demo session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [handle], properties: { handle: { type: string, enum: [mira, ravi, jo, responder, analyst] }, code: { type: string } } }
+      responses: { '200': { description: Authenticated actor and signed session }, '401': { description: Phone verification failed } }
+  /api/{domain}/{action}:
+    post:
+      summary: Execute a typed domain command
+      parameters:
+        - { name: domain, in: path, required: true, schema: { type: string } }
+        - { name: action, in: path, required: true, schema: { type: string, enum: [quote, book, retry-search, offer, accept-offer, set-online, trip-action, document-submit, document-review, document-read, pickup-override, suspend-driver, incident, acknowledge, rating, case, refund, payment-retry, payout-run, reconcile, zone-pause, location, share, contact, event] } }
+      requestBody: { required: true, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+      responses: { '200': { description: Command result }, '409': { description: Stale state or conflict }, '422': { description: Validation error } }
+  /api/{kind}:
+    get:
+      summary: List role-scoped domain records
+      parameters: [{ name: kind, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Role-scoped results } }
+  /api/{kind}/{id}:
+    get:
+      summary: Read a role-scoped record
+      parameters: [{ name: kind, in: path, required: true, schema: { type: string } }, { name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Authoritative server record }, '403': { description: Access denied } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

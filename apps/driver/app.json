@@ -1,0 +1,1 @@
+{"expo":{"name":"Ride Pilot · Driver","slug":"ride-pilot-driver","scheme":"ridepilot-driver","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"dark","ios":{"supportsTablet":true,"infoPlist":{"NSLocationWhenInUseUsageDescription":"Share your location during an active trip."}},"android":{"permissions":["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION"]}}}

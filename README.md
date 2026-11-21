@@ -1,89 +1,54 @@
-# BMAD — Uber-Style Ride-Hailing MVP Planning
+# Ride-hailing MVP
 
-This repository holds the end-to-end planning artifacts for a pilot, Uber-style ride-hailing MVP, produced with the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) (BMad Builder) agent framework. It covers one city, defined service zones, and one economy ride category — from product requirements through UX strategy, epics, and user stories — ready to hand off to implementation.
+A local/demo implementation of the one-city ride-hailing pilot described in the PRD. It contains a rider app, driver app, operations console, NestJS API and worker, shared contracts, and PostgreSQL storage.
 
-The project is currently in the **planning stage**: no application code has been written yet. Every epic and story in [`sprint-status.yaml`](_bmad-output/implementation-artifacts/sprint-status.yaml) is still `backlog`.
+## Local setup
 
-## What's in scope
+Requirements: Node.js 22.13 or newer, npm, and Docker Compose.
 
-**Product surfaces:** Rider app, driver app, and an operations console.
-
-**In scope for the pilot:** on-demand point-to-point rides, one digital payment method, upfront quotes, driver verification, dispatch, live trip tracking, pickup verification (PIN), receipts, ratings, support/safety flows, and driver payouts.
-
-**Deferred:** scheduled and shared rides, multi-stop itineraries, cash payments, subscriptions, promotions, airport-specific flows, and dynamic pricing.
-
-## Repository layout
-
-```
-.
-├── input/                          Source documents fed into the BMAD workflow
-│   ├── Uber_Ride_Hailing_PRD.md        Product Requirements Document (v0.1)
-│   └── Ride-Hailing MVP · UX Strategy.md   UX strategy and principles
-│
-├── _bmad-output/                   Generated planning & implementation artifacts
-│   ├── planning-artifacts/
-│   │   ├── epics.md                    Epic breakdown, requirements inventory, FR coverage map
-│   │   └── ux-designs/                 Generated UX design assets
-│   └── implementation-artifacts/
-│       └── sprint-status.yaml          Live tracking of epic/story/retrospective status
-│
-├── _bmad/                          BMAD Method installation (core + bmm modules, config, scripts)
-├── .claude/ .agent/ .agents/       Per-tool skill definitions used by BMAD agents
-│   skills/                             (Claude Code, generic "Agents" format, etc.)
-└── .github/agents/                 GitHub Copilot-style agent definitions for the BMAD personas
+```sh
+cp .env.example .env
+npm install
+npm run db:up
+npm run db:migrate
+npm run demo:seed
+npm run dev
 ```
 
-## Product requirements (PRD)
+Then start each mobile app in a separate terminal:
 
-[`input/Uber_Ride_Hailing_PRD.md`](input/Uber_Ride_Hailing_PRD.md) defines:
+```sh
+npm run dev:rider
+npm run dev:driver
+```
 
-- **Users:** rider, driver, operations agent, and their primary jobs.
-- **Trip lifecycle:** `Searching → Assigned → Driver arrived → In progress → Completed`, with `No driver found` and `Cancelled` as alternate outcomes, and payment status tracked independently of trip status.
-- **Functional requirements (R01–R11)** covering sign-in, quoting, driver onboarding, dispatch, live trip and pickup verification, cancellations/no-shows, fare and payment, earnings/payouts, safety and support, trip history, and the operations console.
-- **Non-functional requirements** for recovery/idempotency, performance targets (e.g. p95 quote response ≤ 3s), data protection, accessibility, and observability.
-- **Pilot measures and release criteria** across three stages: internal field test → closed pilot → controlled expansion.
+The API listens on port 3000, the operations console on port 5173, and Expo prints the rider/driver preview URLs. To use a physical device, set `EXPO_PUBLIC_API_URL` in the shell to the development machine's LAN address before starting Expo.
 
-## UX strategy
+## Demo accounts
 
-[`input/Ride-Hailing MVP · UX Strategy.md`](input/Ride-Hailing%20MVP%20·%20UX%20Strategy.md) translates the PRD into design principles and an end-to-end experience map, anchored on one idea: **certainty under uncertainty**. Key bets:
+| Surface | Demo user | Verification code |
+| --- | --- | --- |
+| Rider | Mira | `424242` |
+| Driver | Ravi | `424242` |
+| Operations | Jo | `424242` |
+| Safety responder | Responder | `424242` |
+| Pilot analyst | Analyst | `424242` |
 
-1. One source of truth on screen — trip state and payment state are always shown as distinct, labelled things, with staleness surfaced rather than hidden.
-2. Make the offer legible — ETA, price breakdown, currency, and quote expiry are shown before confirmation.
-3. Every failure has a designed next step — no generic error toasts.
+Ravi is seeded as an approved driver with an example vehicle. Submitting documents moves the application to pending review and takes the driver offline until an operations agent reviews it.
 
-It also defines seven ranked UX principles, user/context profiles for riders, drivers, and operations agents, and edge personas (low-vision/screen-reader users, location-denied riders, new drivers, riders in unsafe situations) to design for from day one.
+## Local adapters and data
 
-## Epics and stories
+Phone verification, route/quote calculation, masked contact, messaging, payment authorization, captures, refunds, and payouts are deterministic demo integrations. They do not contact vendors or move real money. `DEMO_PROVIDER_OUTCOME` sets the default outcome (`paid`, `failed`, or `unknown`). Override one operation independently when exercising a later payment state, for example `DEMO_AUTHORIZE_OUTCOME=paid DEMO_CAPTURE_OUTCOME=failed` to simulate a successful authorization followed by a declined capture.
 
-[`_bmad-output/planning-artifacts/epics.md`](_bmad-output/planning-artifacts/epics.md) breaks the PRD into 6 epics, each mapped back to specific functional requirements:
+Document contents are encrypted with AES-256-GCM and written under `UPLOAD_DIR`; the local key and database credentials in `.env.example` are for development only. Keep `.env` private and never use demo data or keys for a real pilot.
 
-| Epic | Theme |
-| --- | --- |
-| 1 | Driver onboarding and eligibility |
-| 2 | Book a ride and find a driver |
-| 3 | Meet the driver and complete the trip |
-| 4 | Settle the fare and pay the driver |
-| 5 | Safety, support, and trip history |
-| 6 | Pilot measurement and marketplace controls |
+The database volume is named `ride-db`. To reset local demo data, stop the stack and remove that volume with Docker Compose. This permanently deletes its local database contents.
 
-Each epic is broken into user stories with Given/When/Then acceptance criteria, cross-referenced to the PRD's requirement IDs. Current sprint status for every epic and story is tracked in [`sprint-status.yaml`](_bmad-output/implementation-artifacts/sprint-status.yaml).
+## Planning sources
 
-## About BMAD
-
-[BMAD](https://github.com/bmad-code-org/BMAD-METHOD) ("Builder Method for Agentic Development") is an agent framework that drives structured product planning through specialized personas — analyst, PM, architect, UX designer, and developer — each implemented as a skill/agent definition. This repo includes the installed BMAD core and `bmm` (BMAD Method Module) modules under `_bmad/`, along with per-tool skill definitions so the same personas are available in Claude Code, GitHub Copilot, Cursor, and other supported agent runtimes.
-
-Agent personas available in this project:
-
-- **Analyst (Mary)** — market research, competitive analysis, requirements discovery
-- **PM (John)** — PRD creation
-- **Architect (Winston)** — system architecture and technical design
-- **UX Designer (Sally)** — UX strategy and UI specification
-- **Dev (Amelia)** — implementation of stories and code changes
-
-## Status
-
-- [x] Product Requirements Document
-- [x] UX strategy
-- [x] Epic and story breakdown with FR coverage map
-- [x] Sprint status scaffolding generated
-- [ ] Story implementation (all epics currently `backlog`)
+- [Product requirements](input/Uber_Ride_Hailing_PRD.md)
+- [UX strategy](input/Ride-Hailing%20MVP%20%C2%B7%20UX%20Strategy.md)
+- [Epics and user stories](_bmad-output/planning-artifacts/epics.md)
+- [Design specification](_bmad-output/planning-artifacts/ux-designs/ux-BMAD-2026-11-21/DESIGN.md)
+- [Experience specification](_bmad-output/planning-artifacts/ux-designs/ux-BMAD-2026-11-21/EXPERIENCE.md)
+- [Key-screen mockup](_bmad-output/planning-artifacts/ux-designs/ux-BMAD-2026-11-21/mockups/key-screens.html)

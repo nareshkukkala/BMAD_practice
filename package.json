@@ -1,0 +1,21 @@
+{
+  "name": "ride-hailing-pilot",
+  "private": true,
+  "engines": { "node": ">=22.13" },
+  "workspaces": ["apps/api", "apps/console", "apps/rider", "apps/driver", "packages/contracts"],
+  "scripts": {
+    "dev": "concurrently -k -n api,worker,console -c blue,magenta,green \"npm:dev:api\" \"npm:dev:worker\" \"npm:dev:console\"",
+    "dev:api": "npm --workspace apps/api run start:dev",
+    "dev:worker": "npm --workspace apps/api run worker:dev",
+    "dev:console": "npm --workspace apps/console run dev",
+    "dev:rider": "npm --workspace apps/rider run start",
+    "dev:driver": "npm --workspace apps/driver run start",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm --workspace apps/api test",
+    "db:up": "docker compose up -d db",
+    "db:migrate": "npm --workspace apps/api run migrate",
+    "demo:seed": "npm --workspace apps/api run seed"
+  },
+  "devDependencies": { "concurrently": "^9.2.1", "typescript": "~5.9.3" }
+}

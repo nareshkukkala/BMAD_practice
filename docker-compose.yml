@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:18.7-alpine
+    environment:
+      POSTGRES_USER: ride
+      POSTGRES_PASSWORD: ride
+      POSTGRES_DB: ride_hailing
+    ports: ["5433:5432"]
+    volumes: ["ride-db:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ride -d ride_hailing"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  ride-db:

@@ -39,3 +39,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-live-location-tracking.md`
   summary: No automated test coverage exists for the driver's automatic location-reporting effect (gating on trip status, epoch/sequence correctness, interpolation math) or the rider's haversine distance calculation — `apps/rider` and `apps/driver` have no test infrastructure at all today.
   evidence: Verification-gap review found a regression here (e.g. inverted gating, swapped lat/lng in the haversine formula) would ship undetected by every existing check. Fold into the already-deferred "End-to-end acceptance-test coverage" item when that work starts; when it does, extract the interpolation/distance math into plain importable functions so they can be unit-tested without rendering.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-earnings-payout-cadence.md`
+  summary: Replace the driver app's raw-JSON "Open earnings"/"Payout status" output (`setMessage(JSON.stringify(rows))`) with a readable list view (trip/amounts/status for earnings; amount/status/date for payouts).
+  evidence: Spec exceeded the 1600-token guideline (2110 tokens); split since the backend payout cadence and the driver-UI readability improvement are independently useful on their own, unlike the location spec's two interdependent halves.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-earnings-payout-cadence.md`
+  summary: Once a payout work item resolves to `failed`, the affected earnings reset to `available` but are never retried — the next cadence (or manual `payout-run`) pass recomputes the identical `operation_key` and hits the existing `failed` row via `ON CONFLICT`, leaving the payout permanently stuck unless the earning set changes.
+  evidence: Confirmed by two reviewers to be the exact same `operation_key`-dedup/no-retry pattern already present in the pre-existing manual `Marketplace.payout()` in `apps/api/src/service.ts` — not introduced by this diff. A holistic fix (e.g. a distinct retry key per attempt, or an explicit reconciliation/requeue path) would need to touch that manual path too, which this spec's frozen boundary forbade.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-earnings-payout-cadence.md`
+  summary: No automated test covers `runPayoutCadence()`'s gating (age threshold, `available`-only filter) or its aggregation math — a regression (e.g. an inverted age comparison, or dropping the status filter) would ship undetected.
+  evidence: Verification-gap review confirmed no test in the repo touches `worker.ts`, `service.ts`, or the `entities`/`work_items` tables (the existing suite is pure-function unit tests only). Proposed test: seed an aged `earning`, run `runPayoutCadence()`, assert the resulting `work_items`/entity state; plus a case asserting a fresh earning is left untouched. Fold into the already-deferred "End-to-end acceptance-test coverage" item.

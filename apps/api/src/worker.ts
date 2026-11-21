@@ -42,6 +42,56 @@ async function expireSearches() {
   }
 }
 
+async function runPayoutCadence() {
+  const parsedCadence = Number(process.env.PAYOUT_CADENCE_SECONDS);
+  const cadenceSeconds = Number.isFinite(parsedCadence) && parsedCadence >= 0 ? parsedCadence : 86400;
+  const drivers = await pool.query(
+    "SELECT DISTINCT owner_id FROM entities WHERE kind='earning' AND status='available' AND created_at <= now() - ($1::int * interval '1 second') LIMIT 100",
+    [cadenceSeconds],
+  );
+  for (const row of drivers.rows) {
+    const driverId = row.owner_id;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const earnings = await client.query(
+        "SELECT id, data FROM entities WHERE kind='earning' AND owner_id=$1 AND status='available' AND created_at <= now() - ($2::int * interval '1 second') ORDER BY created_at FOR UPDATE",
+        [driverId, cadenceSeconds],
+      );
+      if (!earnings.rowCount) {
+        await client.query('COMMIT');
+        continue;
+      }
+      const ids = earnings.rows.map((e: any) => e.id);
+      const amount = earnings.rows.reduce((s: number, e: any) => s + Number(e.data.netMinor || 0), 0);
+      const currency = process.env.PILOT_CURRENCY || 'INR';
+      const key = `payout:${driverId}:${ids.join(',')}`;
+      const inserted = await client.query(
+        "INSERT INTO work_items(id,kind,aggregate_id,operation_key,data) VALUES($1,'payout',$2,$3,$4) ON CONFLICT(operation_key) DO UPDATE SET operation_key=EXCLUDED.operation_key RETURNING *",
+        [randomUUID(), driverId, key, { amountMinor: amount, earningIds: ids, currency }],
+      );
+      const work = inserted.rows[0];
+      if (['pending', 'unknown'].includes(work.status)) {
+        await client.query(
+          "UPDATE entities SET status='payout_pending' WHERE kind='earning' AND id=ANY($1::text[]) AND status='available'",
+          [ids],
+        );
+      }
+      const payoutData = { operationId: work.id, earningIds: ids, amountMinor: amount, currency, status: work.status, createdAt: work.created_at };
+      await client.query(
+        "INSERT INTO entities(id,kind,owner_id,status,data) VALUES($1,'payout',$2,$4,$3) ON CONFLICT(id) DO NOTHING",
+        [`payout:${work.id}`, driverId, payoutData, work.status === 'failed' ? 'failed' : 'pending'],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('payout cadence failed for driver', driverId, error);
+    } finally {
+      client.release();
+    }
+  }
+}
+
 async function processOne() {
   const client = await pool.connect();
   let processingId: string | undefined;
@@ -180,6 +230,7 @@ async function main() {
   for (;;) {
     try {
       await expireSearches();
+      await runPayoutCadence();
       if (!(await processOne())) await sleep(1500);
     } catch (error) {
       console.error('worker loop failed', error);

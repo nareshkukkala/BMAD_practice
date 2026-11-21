@@ -27,3 +27,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-ui-rebuild-match-mockups.md`
   summary: Driver name (`||'Ravi'`) and vehicle plate (`||'AB 1234'`) fall back to hardcoded demo values with no empty/error state if `trip.driver` is ever actually missing while a trip is Assigned/Driver-arrived.
   evidence: Confirmed pre-existing — identical fallback literals were already present before this diff; it only relocated them into the new detail-row/panel layout. Worth an explicit loading/error state if `trip.driver` becomes a real nullable field later.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-console-ui-match-mockups.md`
+  summary: Neither the console's new refund-confirm dialog nor its documents dialog can be dismissed by clicking the `::backdrop`, only via Cancel/Close or Escape.
+  evidence: Confirmed exact match to the approved mockup's own behavior — `key-screens.html`'s script wires Tab-trap and button clicks but no backdrop-click-to-dismiss handler either. Inherited UX-design decision, not introduced by this diff; raise against the mockup/UX design artifacts if backdrop dismissal should be added.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-console-ui-match-mockups.md`
+  summary: No automated test coverage exists for the console's refund-confirmation wiring (Confirm/Cancel bound to the right buttons, no premature or duplicate `/api/operations/refund` call) or the documents dialog, and `apps/console` has no test script or test framework at all today.
+  evidence: Verification-gap review confirmed a wiring mistake here (e.g. Confirm accidentally wired to Cancel's handler) would ship with every existing check green. Standing up vitest+jsdom for this workspace from scratch is not a trivial patch — fold into the already-deferred "End-to-end acceptance-test coverage mapped to each of the 6 epics' stories" item above when that work starts.

@@ -1,1 +1,1 @@
-{"extends":"../../tsconfig.base.json","compilerOptions":{"jsx":"react-native","noEmit":true,"allowJs":true},"include":["App.tsx"]}
+{"extends":"../../tsconfig.base.json","compilerOptions":{"jsx":"react-native","module":"preserve","moduleResolution":"bundler","noEmit":true,"allowJs":true},"include":["App.tsx"]}

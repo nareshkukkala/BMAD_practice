@@ -23,7 +23,7 @@ paths:
       summary: Execute a typed domain command
       parameters:
         - { name: domain, in: path, required: true, schema: { type: string } }
-        - { name: action, in: path, required: true, schema: { type: string, enum: [quote, book, retry-search, offer, accept-offer, set-online, trip-action, document-submit, document-review, document-read, pickup-override, suspend-driver, incident, acknowledge, rating, case, refund, payment-retry, payout-run, reconcile, zone-pause, location, share, contact, event] } }
+        - { name: action, in: path, required: true, schema: { type: string, enum: [quote, book, retry-search, offer, accept-offer, set-online, trip-action, document-submit, document-review, document-read, pickup-override, suspend-driver, incident, acknowledge, case-resolve, rating, case, refund, payment-retry, payout-run, reconcile, zone-pause, location, share, contact, event] } }
       requestBody: { required: true, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
       responses: { '200': { description: Command result }, '409': { description: Stale state or conflict }, '422': { description: Validation error } }
   /api/{kind}:

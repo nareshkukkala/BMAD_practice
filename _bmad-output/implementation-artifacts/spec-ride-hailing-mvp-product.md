@@ -75,7 +75,7 @@ context:
 
 ## Implementation Notes
 
-The repository now has rider and driver Expo apps, an operations console, a NestJS API and worker, PostgreSQL migrations, shared contracts, local provider adapters, encrypted local document storage, and a README startup path. Follow-up work added idempotent booking and offer actions, current-document eligibility checks, payment authorization before dispatch, payment capture/release/refund work, pending payout records, case idempotency, and trip-state polling. The complete six-epic implementation remains incomplete: important acceptance paths are partial, the edge-case matrix does not yet have passing end-to-end coverage, and the apps and database have not been built or exercised together.
+The repository now has rider and driver Expo apps, an operations console, a NestJS API and worker, PostgreSQL migrations, shared contracts, local provider adapters, encrypted local document storage, and a README startup path. Follow-up work added idempotent booking and offer actions, current-document eligibility checks, payment authorization before dispatch, payment capture/release/refund work, pending payout records, case idempotency, and trip-state polling. The latest pass also disables demo authentication in production, serializes driver availability changes, validates encrypted document uploads, routes operations document reads through the audited decrypt path, hides offers from busy drivers, restricts incident and support access to trip participants, bounds worker retries, adds audited idempotent case resolution, and reports zone metrics with hourly rate denominators and zero-sample hours. The complete six-epic implementation remains incomplete: important acceptance paths are partial, the edge-case matrix does not yet have passing end-to-end coverage, and the apps and database have not been exercised together.
 
 ## Design Notes
 
@@ -90,9 +90,9 @@ Implementation order follows the dependency chain: eligibility → booking/dispa
 
 **Commands:**
 - `npm --workspace apps/api test` — passed: 9 local-adapter, trip-rule, and driver-eligibility tests.
-- Node `--experimental-strip-types --check` — passed for API TypeScript files.
-- Global TypeScript `transpileModule` parser — passed for rider, driver, console, and key API source files; this checks syntax only, not types.
-- `npm --workspace apps/api run typecheck` — not run successfully: `tsc` is unavailable because dependencies are not installed.
-- `npm install` — interrupted after waiting without output; offline install reports an uncached package (`concurrently`).
-- Docker integration setup — not run: Docker socket access is denied in this environment.
-- Disposable local PostgreSQL initialization — blocked: the sandbox denies the shared-memory operation PostgreSQL requires.
+- `npm run typecheck` — passed for API, operations console, rider, and driver workspaces.
+- `npm run build` — passed for API and operations console.
+- `npx expo export --platform web` — passed for both rider and driver apps.
+- `npm --workspace apps/api test` — passed: 9 local-adapter, trip-rule, and driver-eligibility tests.
+- `git diff --check HEAD` — passed for the current worktree changes.
+- Database-backed integration/E2E checks remain unverified: Docker API access is denied in this environment, and the service flows have not been exercised against PostgreSQL.

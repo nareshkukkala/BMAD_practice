@@ -17,6 +17,8 @@ const service=new Marketplace();
   if(!availability.rowCount||availability.rows[0].status!=='online'||!availability.rows[0].data.available)return [];
   const eligible=await pool.query("SELECT status,data FROM entities WHERE kind='driver' AND owner_id=$1 ORDER BY created_at DESC LIMIT 1",[actor.id]);
   if(!eligible.rowCount||!driverIsEligible(eligible.rows[0].status,eligible.rows[0].data))return [];
+  const active=await pool.query("SELECT id FROM entities WHERE kind='trip' AND status IN ('Assigned','Driver arrived','In progress') AND data->>'driverId'=$1 LIMIT 1",[actor.id]);
+  if(active.rowCount)return [];
   await pool.query("UPDATE entities SET status='expired' WHERE kind='offer' AND owner_id=$1 AND status='live' AND (data->>'expiresAt')::timestamptz<=now()",[actor.id]);
   const trips=await pool.query("SELECT * FROM entities WHERE kind='trip' AND status='Searching' AND data->>'paymentStatus'='Authorised' AND zone=$1 ORDER BY COALESCE((data->>'etaMinutes')::int,999),created_at LIMIT 30",[availability.rows[0].zone]);
   const offers=[];
@@ -37,9 +39,7 @@ const service=new Marketplace();
   const actor=principal(req);
   if(kind==='document'){
    allow(actor,'ops');
-   const row=await pool.query("SELECT * FROM entities WHERE id=$1 AND kind='driver'",[id]);
-   if(!row.rowCount)fail(404,'NOT_FOUND','Document not found.');
-   return row.rows[0].data.documents;
+   return service.command('document-read',actor,{driverId:id,reason:'Operations document review'});
   }
   const result=await service.get(kind,actor,{id});
   if(!result.length)fail(404,'NOT_FOUND','Record not found.');

@@ -44,6 +44,7 @@ async function expireSearches() {
 
 async function processOne() {
   const client = await pool.connect();
+  let processingId: string | undefined;
   try {
     await client.query('BEGIN');
     const found = await client.query(
@@ -54,6 +55,7 @@ async function processOne() {
       return false;
     }
     const work = found.rows[0];
+    processingId = work.id;
     const outcome = demoPaymentOutcome(work.kind);
     if (outcome === 'unknown' || outcome === 'failed') {
       await client.query('UPDATE work_items SET status=$2, attempts=attempts+1, last_error=$3 WHERE id=$1', [
@@ -155,6 +157,17 @@ async function processOne() {
     return true;
   } catch (error) {
     await client.query('ROLLBACK');
+    if (processingId) {
+      await client.query(
+        `UPDATE work_items
+         SET attempts=attempts+1,
+             status=CASE WHEN attempts+1>=8 THEN 'dead' ELSE 'pending' END,
+             available_at=now()+make_interval(secs=>LEAST(300,(2^LEAST(attempts+1,8))::int)),
+             last_error=$2
+         WHERE id=$1 AND status='pending'`,
+        [processingId, error instanceof Error ? error.message.slice(0,500) : 'Unknown worker error'],
+      );
+    }
     console.error('worker item failed', error);
     return false;
   } finally {

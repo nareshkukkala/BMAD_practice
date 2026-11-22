@@ -2,7 +2,7 @@
 title: 'Ride-hailing MVP product implementation'
 type: 'feature'
 created: '2026-11-21'
-status: 'in-progress'
+status: 'complete'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: '49c1b719ec0e51b76548abfa8196881be4fa17ec'
@@ -50,21 +50,20 @@ context:
 - `_bmad-output/planning-artifacts/ux-designs/ux-BMAD-2026-11-21/DESIGN.md` and `EXPERIENCE.md` — design tokens, accessibility floor, state patterns, and complete key flows.
 - `_bmad-output/planning-artifacts/ux-designs/ux-BMAD-2026-11-21/mockups/key-screens.html` — visual and interaction reference for pickup, quote refresh, money recovery, emergency calling, and refund confirmation.
 - `_bmad-output/implementation-artifacts/spec-1-1-submit-driver-documents.md` — earlier story plan; preserve its configurable checklist and secure-document constraints, but reconcile its stack-open assumption with the architecture spine.
-- `_bmad-output/implementation-artifacts/sprint-status.yaml` — story tracker currently says backlog for Story 1.1 despite its separate spec being in-progress; reconcile before using it for progress reporting.
-- `README.md` — confirms there is no app implementation. Repository inspection found no application source, dependency manifests, migrations, test suite, or deployment configuration. BMAD tooling and the HTML mockup are not product code.
-- No app code exists to extend. The new implementation will need to establish the repository layout, client and server scaffolds, persistence, configuration, and local run path.
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` — implementation and story tracker for the six epics.
+- `README.md` — local setup and demo usage for the implemented pilot surfaces.
 
 ## Tasks & Acceptance
 
 **Execution:**
 - [x] Resolve the selected integration mode and close architecture review gaps affecting availability ownership, transaction seams, location ordering, payments/payouts, identity, and operational recovery.
 - [x] Scaffold the rider app, driver app, operations console, shared API contract, modular backend, database, worker, and local developer setup.
-- [ ] Implement Epic 1 eligibility and document review, then Epic 2 sign-in, supported locations, quotes, booking, dispatch, and retry behavior.
-- [ ] Implement Epic 3 pickup, location freshness, PIN verification, cancellation/no-show, rematch, and completion flows.
-- [ ] Implement Epic 4 fare, payment recovery, earnings, payout, refund, and reconciliation flows with durable idempotency.
-- [ ] Implement Epic 5 sharing, emergency entry, feedback, support cases, urgent escalation, and audited operations resolution.
-- [ ] Implement Epic 6 deduplicated pilot events, zone/hour reporting, operational alerts, booking pause, and expansion review.
-- [ ] Apply UX tokens and interaction rules to all surfaces; document local startup and configuration in the project README.
+- [x] Implement Epic 1 eligibility and document review, then Epic 2 sign-in, supported locations, quotes, booking, dispatch, and retry behavior.
+- [x] Implement Epic 3 pickup, location freshness, PIN verification, cancellation/no-show, rematch, and completion flows.
+- [x] Implement Epic 4 fare, payment recovery, earnings, payout, refund, and reconciliation flows with durable idempotency.
+- [x] Implement Epic 5 sharing, emergency entry, feedback, support cases, urgent escalation, and audited operations resolution.
+- [x] Implement Epic 6 deduplicated pilot events, zone/hour reporting, operational alerts, booking pause, and expansion review.
+- [x] Apply UX tokens and interaction rules to all surfaces; document local startup and configuration in the project README.
 
 **Acceptance Criteria:**
 - Given an invited rider, an approved driver, and a supported route, when the rider books, then the system creates at most one request, assigns at most one eligible driver, and shows authoritative trip state on reconnect.
@@ -75,7 +74,7 @@ context:
 
 ## Implementation Notes
 
-The repository now has rider and driver Expo apps, an operations console, a NestJS API and worker, PostgreSQL migrations, shared contracts, local provider adapters, encrypted local document storage, and a README startup path. Follow-up work added idempotent booking and offer actions, current-document eligibility checks, payment authorization before dispatch, payment capture/release/refund work, pending payout records, case idempotency, and trip-state polling. The latest pass also disables demo authentication in production, serializes driver availability changes, validates encrypted document uploads, routes operations document reads through the audited decrypt path, hides offers from busy drivers, restricts incident and support access to trip participants, bounds worker retries, adds audited idempotent case resolution, and reports zone metrics with hourly rate denominators and zero-sample hours. The complete six-epic implementation remains incomplete: important acceptance paths are partial, the edge-case matrix does not yet have passing end-to-end coverage, and the apps and database have not been exercised together.
+The user reports that Claude Code completed all six epics, including live location tracking and payout cadence. The six epics are therefore marked done in the sprint tracker. Thirteen smaller follow-ups remain open in `deferred-work.md`; these include acceptance-test coverage and UI refinements. This status is based on the user's implementation update and is not an independent acceptance audit.
 
 ## Design Notes
 
@@ -89,10 +88,10 @@ Implementation order follows the dependency chain: eligibility → booking/dispa
 - Confirm README setup instructions bring up the configured clients and backend locally.
 
 **Commands:**
-- `npm --workspace apps/api test` — passed: 9 local-adapter, trip-rule, and driver-eligibility tests.
 - `npm run typecheck` — passed for API, operations console, rider, and driver workspaces.
 - `npm run build` — passed for API and operations console.
 - `npx expo export --platform web` — passed for both rider and driver apps.
 - `npm --workspace apps/api test` — passed: 9 local-adapter, trip-rule, and driver-eligibility tests.
 - `git diff --check HEAD` — passed for the current worktree changes.
-- Database-backed integration/E2E checks remain unverified: Docker API access is denied in this environment, and the service flows have not been exercised against PostgreSQL.
+- Status update: user reported Claude Code completion of all six epics on 2026-11-22; deferred follow-ups are tracked in `deferred-work.md`.
+- This environment previously denied Docker API access, so database-backed integration/E2E evidence was not collected in this session; acceptance-test coverage remains among the deferred items.
